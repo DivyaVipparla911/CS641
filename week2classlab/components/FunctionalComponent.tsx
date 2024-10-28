@@ -1,5 +1,6 @@
 import React, {useState} from "react";
 import { View, Text, Button} from "react-native";
+import customStyle from "../styles/custom";
 
 interface FunctionalcomponentProps{
     buttonTitle: string;
@@ -10,7 +11,7 @@ const FunctionalComponent = (props : FunctionalcomponentProps)=> {
     const[count, setCount] = useState(0);
 
     return(
-        <View>
+        <View style = {customStyle.container}>
             <Text>Functional Component</Text>
             <Text>{count}</Text>
             <Button title = "Button1" onPress={()=> setCount(count+1)}></Button>
