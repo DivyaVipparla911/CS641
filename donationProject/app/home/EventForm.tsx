@@ -4,6 +4,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { db } from '../firebase'; // Import your Firebase config
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
+import Geocoder from 'react-geocode';
 
 const EventForm = () => {
   const navigation = useNavigation();
@@ -12,7 +13,8 @@ const EventForm = () => {
   const [eventDate, setEventDate] = useState('');
   const [itemsAccepted, setItemsAccepted] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-
+  const [location, setLocation] = useState('');
+  const [suggestions, setSuggestions] = useState([]);
   const handleSubmit = async () => {
     if (!eventName || !eventDescription || !eventDate || !itemsAccepted) {
       alert('Please fill out all fields.');
@@ -34,12 +36,27 @@ const EventForm = () => {
       alert('There was an error creating the event. Please try again.');
     }
   };
-
+  
+    useEffect(() => {
+      const fetchSuggestions = async () => {
+        if (location.length > 3) {
+          const response = await Geocoder.geocode(location);
+          setSuggestions(response.results);
+        }
+      };
+  
+      fetchSuggestions();
+    }, [location]);
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
       setEventDate(selectedDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
     }
+  };
+
+  const handleSelectSuggestion = (suggestion) => {
+    setLocation(suggestion.formatted_address);
+    setSuggestions([]);
   };
 
   return (
@@ -92,6 +109,20 @@ const EventForm = () => {
             />
           )}
         </>
+      )}
+      <TextInput
+        placeholder="Enter location"
+        value={location}
+        onChangeText={setLocation}
+      />
+      {suggestions.length > 0 && (
+        <View>
+          {suggestions.map((suggestion) => (
+            <Text key={suggestion.place_id} onPress={() => handleSelectSuggestion(suggestion)}>
+              {suggestion.formatted_address}
+            </Text>
+          ))}
+        </View>
       )}
 
       <Button title="Submit Event" onPress={handleSubmit} />
