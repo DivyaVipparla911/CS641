@@ -8,7 +8,7 @@ import DonationList from './home/DonationList';
 import EventList from './home/EventList';
 import DonationForm from './home/DonationForm';
 import EventForm from './home/EventForm';
-import { SafeAreaView } from 'react-native';
+import EventDetails from './home/EventDetails';
 
 const Stack = createStackNavigator();
 
@@ -16,16 +16,15 @@ const App = () => {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Login">
-        {/* Authentication Screens */}
         <Stack.Screen name="Login" component={Login} />
         <Stack.Screen name="Register" component={Register} />
 
-        {/* Home Screens */}
         <Stack.Screen name="Home" component={HomeScreen} />
         <Stack.Screen name="DonationList" component={DonationList} />
         <Stack.Screen name="EventList" component={EventList} />
         <Stack.Screen name="DonationForm" component={DonationForm} />
         <Stack.Screen name="EventForm" component={EventForm} />
+        <Stack.Screen name="EventDetails" component={EventDetails} />
         </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,50 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, Button, StyleSheet } from 'react-native';
+import { ScrollView, Text, FlatList, Button, StyleSheet, TouchableOpacity } from 'react-native';
 import { db } from '../firebase';
 import { collection, getDocs } from 'firebase/firestore';
-import { useNavigation } from '@react-navigation/native'; // Importing useNavigation hook
+import { useNavigation } from '@react-navigation/native'; 
 
 const EventList = () => {
   const [events, setEvents] = useState<any[]>([]);
-  const navigation = useNavigation(); // Initialize useNavigation hook
+  const navigation = useNavigation(); 
 
   useEffect(() => {
     const fetchEvents = async () => {
       const querySnapshot = await getDocs(collection(db, 'events'));
-      setEvents(querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }))); // Add doc.id to each event
+      setEvents(querySnapshot.docs.map(doc => ({ ...doc.data(), id: doc.id }))); 
     };
     fetchEvents();
   }, []);
 
+  const handleEventPress = (eventId) => {
+    navigation.navigate('EventDetails', { eventId });  
+  };
+
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <FlatList
         data={events}
-        keyExtractor={(item) => item.id} // Using Firestore document ID as the key
+        keyExtractor={(item) => item.id} 
         renderItem={({ item }) => (
-          <View style={styles.item}>
+          <TouchableOpacity onPress={() => handleEventPress(item.id)} style={styles.item}>
             <Text style={styles.title}>{item.eventName}</Text>
-            <Text style={styles.description}>{item.eventDescription}</Text>
+            {/* <Text style={styles.description}>{item.eventDescription}</Text>
             <Text style={styles.option}>Items accepted: {item.itemsAccepted}</Text>
-            
-            {/* Displaying the location information */}
-            {item.location && item.location.address && (
+             */}
+
+            {/* {item.location && item.location.address && (
               <Text style={styles.location}>
                 Location: {item.location.address}
               </Text>
-            )}
-            {/* Optionally display coordinates if needed */}
-            {item.location && item.location.coordinates && (
+            )} */}
+
+            {/* {item.location && item.location.coordinates && (
               <Text style={styles.coordinates}>
                 Coordinates: Lat {item.location.coordinates.lat}, Lon {item.location.coordinates.lng}
               </Text>
-            )}
-          </View>
+            )} */}
+          </TouchableOpacity>
         )}
       />
 
       <Button title="Back to Home" onPress={() => navigation.navigate('Home')} />
-    </View>
+    </ScrollView>
   );
 };
 

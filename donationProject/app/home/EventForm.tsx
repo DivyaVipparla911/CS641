@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Platform } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { db } from '../firebase'; // Import your Firebase config
+import { db } from '../firebase'; 
 import { collection, addDoc } from 'firebase/firestore';
 import { useNavigation } from '@react-navigation/native';
-import Geocoder from 'react-geocode';
 
 const EventForm = () => {
   const navigation = useNavigation();
@@ -13,13 +12,18 @@ const EventForm = () => {
   const [eventDate, setEventDate] = useState('');
   const [itemsAccepted, setItemsAccepted] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [location, setLocation] = useState('');
-  const [suggestions, setSuggestions] = useState([]);
+  const [street, setStreet] = useState('');
+  const [zipCode, setZipCode] = useState('');
+  const [state, setState] = useState('');
+  const [city, setCity] = useState('');
+
   const handleSubmit = async () => {
-    if (!eventName || !eventDescription || !eventDate || !itemsAccepted) {
+    if (!eventName || !eventDescription || !eventDate || !itemsAccepted || !street || !city || !zipCode || !state) {
       alert('Please fill out all fields.');
       return;
     }
+
+    const fullAddress = `${street},  ${city}, ${zipCode}, ${state}`;
 
     try {
       await addDoc(collection(db, 'events'), {
@@ -27,6 +31,7 @@ const EventForm = () => {
         eventDescription,
         eventDate,
         itemsAccepted,
+        location: fullAddress,  // Save the full address as a string
         createdAt: new Date(),
       });
       navigation.goBack();
@@ -36,27 +41,12 @@ const EventForm = () => {
       alert('There was an error creating the event. Please try again.');
     }
   };
-  
-    useEffect(() => {
-      const fetchSuggestions = async () => {
-        if (location.length > 3) {
-          const response = await Geocoder.geocode(location);
-          setSuggestions(response.results);
-        }
-      };
-  
-      fetchSuggestions();
-    }, [location]);
+
   const handleDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
     if (selectedDate) {
-      setEventDate(selectedDate.toISOString().split('T')[0]); // Format as YYYY-MM-DD
+      setEventDate(selectedDate.toISOString().split('T')[0]);
     }
-  };
-
-  const handleSelectSuggestion = (suggestion) => {
-    setLocation(suggestion.formatted_address);
-    setSuggestions([]);
   };
 
   return (
@@ -98,32 +88,44 @@ const EventForm = () => {
             style={styles.input}
             placeholder="Event Date (YYYY-MM-DD)"
             value={eventDate}
-            editable={false} // Make this input read-only
+            editable={false} 
           />
           {showDatePicker && (
             <DateTimePicker
               value={new Date()}
               mode="date"
               display="default"
-              onChange={(event, selectedDate) => handleDateChange(event, selectedDate)}
+              onChange={handleDateChange}
             />
           )}
         </>
       )}
+
+      {/* Location Inputs */}
       <TextInput
-        placeholder="Enter location"
-        value={location}
-        onChangeText={setLocation}
+        style={styles.input}
+        placeholder="Street"
+        value={street}
+        onChangeText={setStreet}
       />
-      {suggestions.length > 0 && (
-        <View>
-          {suggestions.map((suggestion) => (
-            <Text key={suggestion.place_id} onPress={() => handleSelectSuggestion(suggestion)}>
-              {suggestion.formatted_address}
-            </Text>
-          ))}
-        </View>
-      )}
+      <TextInput
+        style={styles.input}
+        placeholder="city"
+        value={zipCode}
+        onChangeText={setCity}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Zip Code"
+        value={zipCode}
+        onChangeText={setZipCode}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="State"
+        value={state}
+        onChangeText={setState}
+      />
 
       <Button title="Submit Event" onPress={handleSubmit} />
     </View>

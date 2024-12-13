@@ -21,6 +21,7 @@ const DonationForm = () => {
   const [category, setCategory] = useState('');
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [donationOption, setDonationOption] = useState('drop-off');
+  const [address, setAddress] = useState('');  // State for address input
   const navigation = useNavigation();
 
   // Function to handle image picking
@@ -45,7 +46,7 @@ const DonationForm = () => {
 
   // Function to handle form submission
   const handleSubmit = async () => {
-    if (!itemName || !description || !category) {
+    if (!itemName || !description || !category || (donationOption === 'pickup' && !address)) {
       Alert.alert('Missing Fields', 'Please fill in all required fields.');
       return;
     }
@@ -58,8 +59,9 @@ const DonationForm = () => {
         category,
         imageUri,
         donationOption,
+        address: donationOption === 'pickup' ? address : '',  // Only include address if pickup
         createdAt: serverTimestamp(),
-    });
+      });
 
       Alert.alert('Success', 'Your donation has been submitted!');
       // Clear form fields
@@ -67,7 +69,8 @@ const DonationForm = () => {
       setDescription('');
       setCategory('');
       setImageUri(null);
-      setDonationOption('drop-off');
+      setDonationOption('');
+      setAddress('');  // Reset address field
 
       navigation.navigate('Home'); // Navigate to the Home screen
     } catch (error) {
@@ -115,12 +118,25 @@ const DonationForm = () => {
         onValueChange={(value) => setDonationOption(value)}
         items={[
           { label: 'Drop Off', value: 'drop-off' },
-          { label: 'Pickup Event', value: 'pickup-event' },
+          { label: 'Pickup', value: 'pickup' },
         ]}
         placeholder={{ label: 'Select a donation option', value: null }}
         value={donationOption}
         style={pickerSelectStyles}
       />
+
+      {/* Conditionally render address input based on donation option */}
+      {donationOption === 'pickup' && (
+        <>
+          <Text style={styles.label}>Pickup Address</Text>
+          <TextInput
+            style={styles.input}
+            value={address}
+            onChangeText={setAddress}
+            placeholder="Enter address for pickup"
+          />
+        </>
+      )}
 
       <Text style={styles.label}>Add Image (Optional)</Text>
       <Button title="Pick an Image" onPress={pickImage} />
